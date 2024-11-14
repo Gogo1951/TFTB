@@ -1,0 +1,9 @@
+## Title: Thanks for the Buff!
+## Notes: A simple add-on that emotes a cheer when someone gives you a new buff.
+## Author: Gogo & TechnoHunter#2706
+## Version: 2.0.0
+## X-Curse-Project-ID: TODO
+## Interface: 11504
+## DefaultState: enabled
+
+TFTB.lua
