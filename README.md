@@ -2,6 +2,8 @@
 
 A simple add-on that automatically expresses happiness with an emote whenever you receive a new buff.
 
+Build in, optional `/thankyou` slash-command to send a thank you message to the targeted player. Set this up as a macro for when people give you water, or a portal. (=
+
 ## Download
 
 You can find this on Curseforge.
