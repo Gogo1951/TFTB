@@ -10,13 +10,13 @@ https://legacy.curseforge.com/wow/addons/thanks-for-the-buff-revisited
 
 ## Testing Notes
 
-|             			    | Tested! 	  | Needs Testing! 	|
-|:-------------			    |:---------:	|:-------------:	|
-| Classic Era 			    |    🟢    	  |             		|
-| Classic Hardcore      |    🟢     	|             		|
-| Season of Discovery   |    🟢     	|             		|
-| Cataclysm Classic		  |         	  |     🔴   		    |
-| Retail				        | 			      | 		🔴			    | 
+|             			    | Fully Tested! | Minimally Tested 	| Needs Testing! 	|
+|:-------------			    |:------------:	|:----------------:	|:----------------:	|
+| Classic Era 			    |	🟢    	  	|             		|             		|
+| Classic Hardcore      	|	 	    	|	🟡         		|             		|
+| Season of Discovery   	|	  	   		|	🟡         		|             		|
+| Cataclysm Classic		  	|         	 	|   	   		    |   🔴   		    |
+| Retail				    | 			    |				    | 	🔴			    | 
 
 Feel free to reach out if you're interested in helping with testing. 
 
