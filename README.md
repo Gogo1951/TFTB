@@ -6,7 +6,7 @@ Just a simple add-on that automatically expresses happiness with an emote whenev
 
 You can find this on Curseforge.
 
-TODO
+https://legacy.curseforge.com/wow/addons/thanks-for-the-buff-revisited
 
 ## Report Issues & Get Involved
 
