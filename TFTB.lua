@@ -9,7 +9,7 @@ local state = {
 }
 
 local config = {
-    cooldownDuration = 90,
+    cooldownDuration = 10,
     loginDelay = 5,
     randomEmotes = {
         EMOTE98_TOKEN,
@@ -123,3 +123,46 @@ function frame:OnCombatEvent(...)
         end
     end
 end
+
+-- Define the list of thank you messages
+local thankYouMessages = {
+    "Wow, great job! Thank you for that."
+    "Thanks a lot, that really made a difference!"
+    "You did an awesome thing there—really great work!"
+    "I appreciate what you did. Thank you!"
+    "You're the best helper around—amazing job!"
+    "Thanks! That was a big help right when I needed it."
+    "You're really good at this—you must practice a lot!"
+    "That was so solid! Thanks for being so reliable."
+    "Everyone should know—you're amazing in my book!"
+    "Great skills, I respect that! Thanks!"
+    "You're absolutely fantastic—thank you so much!"
+    "Nicely done! You’re really good at helping out."
+    "You deserve some serious credit for that. Thank you!"
+    "Thanks! You really came through like a hero."
+    "Wow, you’re too good at this! Keep it up!"
+    "I truly appreciate that—seriously, thank you."
+    "Way to go! Great job helping out!"
+    "Nice moves! Thanks for stepping in and helping me!"
+}
+
+-- Function to cheer and send a random thank you message to the target
+local function cheerAndThankTarget()
+    -- Select a random message from the list
+    local message = thankYouMessages[math.random(#thankYouMessages)]
+    
+    -- Send a cheer emote
+    DoEmote("cheer")
+
+    -- Send the thank you message as a whisper to the target
+    local targetName = GetUnitName("target", true)
+    if targetName then
+        SendChatMessage(message, "WHISPER", nil, targetName)
+    else
+        print("No target selected.")
+    end
+end
+
+-- Register the /thankyou slash command
+SLASH_THANKYOU1 = "/thankyou"
+SlashCmdList["THANKYOU"] = cheerAndThankTarget
