@@ -8,14 +8,6 @@ You can find this on Curseforge.
 
 https://legacy.curseforge.com/wow/addons/thanks-for-the-buff-revisited
 
-## Report Issues & Get Involved
-
-You can find this project on GitHub.
-
-https://github.com/Gogo1951/TFTB
-
-Gogo1951 on Discord.
-
 ## Testing Notes
 
 🟢 Classic Era
@@ -28,7 +20,13 @@ Gogo1951 on Discord.
 
 🔴 Retail (Not Tested)
 
-Please reach out if you would like to be involved with testing!
+Feel free to reach out if you're interested in helping with testing. Gogo1951 on Discord.
+
+## Report Issues & Get Involved
+
+You can find this project on GitHub.
+
+https://github.com/Gogo1951/TFTB
 
 ## History
 
