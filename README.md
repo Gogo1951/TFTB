@@ -10,17 +10,17 @@ https://legacy.curseforge.com/wow/addons/thanks-for-the-buff-revisited
 
 ## Testing Notes
 
-🟢 Classic Era
+|             			    | Tested! 	  | Needs Testing! 	|
+|:-------------			    |:---------:	|:-------------:	|
+| Classic Era 			    |    🟢    	  |             		|
+| Classic Hardcore      |    🟢     	|             		|
+| Season of Discovery   |    🟢     	|             		|
+| Cataclysm Classic		  |         	  |     🔴   		    |
+| Retail				        | 			      | 		🔴			    | 
 
-🟡 Classic Hardcore
+Feel free to reach out if you're interested in helping with testing. 
 
-🟡 Season of Discovery (Minimal Testing)
-
-🔴 Cataclysm Classic (Not Tested)
-
-🔴 Retail (Not Tested)
-
-Feel free to reach out if you're interested in helping with testing. Gogo1951 on Discord.
+Gogo1951 on Discord.
 
 ## Report Issues & Get Involved
 
