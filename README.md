@@ -1,6 +1,6 @@
 # Thanks for the Buff! (TFTB)
 
-Just a simple add-on that automatically expresses happiness with an emote whenever you receive a new buff.
+A simple add-on that automatically expresses happiness with an emote whenever you receive a new buff.
 
 ## Download
 
