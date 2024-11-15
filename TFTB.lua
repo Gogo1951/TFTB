@@ -11,11 +11,12 @@ BuffCheerAddon.config = {
     cooldownDuration = 5,
     loginDelay = 5,
     randomEmotes = {
-        "CHEER",
-        "THANK",
         "APPLAUD",
+        "BOW",
+        "CHEER",
         "SALUTE",
-        "BOW"
+        "SMILE",
+        "THANK",
     }
 }
 
