@@ -1,14 +1,14 @@
-local playerGUID = UnitGUID("player")
+local BuffCheerAddon = {}
 local frame = CreateFrame("Frame")
 
-local state = {
+BuffCheerAddon.state = {
     inCombat = false,
     hasLoggedIn = false,
     enterTime = nil
 }
 
-local config = {
-    cooldownDuration = 10,
+BuffCheerAddon.config = {
+    cooldownDuration = 5,
     loginDelay = 5,
     randomEmotes = {
         "CHEER",
@@ -19,82 +19,77 @@ local config = {
     }
 }
 
-local thankCooldown = {}
+BuffCheerAddon.thankCooldown = {}
 
--- Utility function to clear expired cooldowns
 local function clearExpiredCooldowns(now)
-    for key, value in pairs(thankCooldown) do
+    for key, value in pairs(BuffCheerAddon.thankCooldown) do
         if value < now then
-            thankCooldown[key] = nil
+            BuffCheerAddon.thankCooldown[key] = nil
         end
     end
 end
 
--- Debugging helper
-local function debugPrint(...)
-    print("[Debug]:", ...)
+function BuffCheerAddon:shouldProcessEvent()
+    return not self.state.hasLoggedIn and not self.state.inCombat
 end
 
-local function shouldProcessEvent()
-    return not state.hasLoggedIn and not state.inCombat
-end
-
--- Register relevant events
-frame:RegisterEvent("PLAYER_ENTERING_WORLD")
-frame:RegisterEvent("PLAYER_REGEN_DISABLED")
-frame:RegisterEvent("PLAYER_REGEN_ENABLED")
-frame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
-
--- Event handler
-frame:SetScript("OnEvent", function(self, event, ...)
-    if event == "COMBAT_LOG_EVENT_UNFILTERED" then
-        self:OnCombatEvent(CombatLogGetCurrentEventInfo())
-    elseif event == "PLAYER_REGEN_DISABLED" then
-        state.inCombat = true
-    elseif event == "PLAYER_REGEN_ENABLED" then
-        state.inCombat = false
-    elseif event == "PLAYER_ENTERING_WORLD" then
-        state.hasLoggedIn = true
-        state.enterTime = GetTime()
-        C_Timer.After(config.loginDelay, function()
-            state.hasLoggedIn = false
-        end)
-    end
-end)
-
--- Combat log processing
-function frame:OnCombatEvent(...)
+function BuffCheerAddon:OnCombatEvent(...)
     local _, subEvent, _, sourceGUID, sourceName, _, _, destGUID, _, _, _, spellName = ...
     local now = GetTime()
 
-    if not shouldProcessEvent() or subEvent ~= "SPELL_AURA_APPLIED" then
+    if subEvent ~= "SPELL_AURA_APPLIED" or not self:shouldProcessEvent() then
         return
+    end
+
+    if not sourceName or not spellName then
+        return -- Ignore invalid data
     end
 
     clearExpiredCooldowns(now)
 
-    -- Debug logging for key values
-    debugPrint("SubEvent:", subEvent, "Spell:", spellName, "Source:", sourceName, "Target GUID:", destGUID)
-
-    -- Check if the player was the target
-    if destGUID == playerGUID and sourceGUID ~= playerGUID then
-        if not thankCooldown[sourceGUID] then
-            thankCooldown[sourceGUID] = now + config.cooldownDuration
-            local emote = config.randomEmotes[math.random(1, #config.randomEmotes)]
-            if sourceName then
-                debugPrint("Sending emote:", emote, "to", sourceName)
-                DoEmote(emote, sourceName)
-            else
-                debugPrint("Source name missing for GUID:", sourceGUID)
-            end
-        else
-            debugPrint("Cooldown active for GUID:", sourceGUID)
+    if destGUID == UnitGUID("player") and sourceGUID ~= UnitGUID("player") then
+        if not self.thankCooldown[sourceGUID] then
+            self.thankCooldown[sourceGUID] = now + self.config.cooldownDuration
+            local emote = self.config.randomEmotes[math.random(1, #self.config.randomEmotes)]
+            DoEmote(emote, sourceName)
         end
-    else
-        debugPrint("Event ignored: Player not target.")
     end
 end
 
+function BuffCheerAddon:OnEvent(event, ...)
+    if event == "COMBAT_LOG_EVENT_UNFILTERED" then
+        self:OnCombatEvent(CombatLogGetCurrentEventInfo())
+    elseif event == "PLAYER_REGEN_DISABLED" then
+        self.state.inCombat = true
+    elseif event == "PLAYER_REGEN_ENABLED" then
+        self.state.inCombat = false
+    elseif event == "PLAYER_ENTERING_WORLD" then
+        self.state.hasLoggedIn = true
+        self.state.enterTime = GetTime()
+        C_Timer.After(self.config.loginDelay, function()
+            self.state.hasLoggedIn = false
+        end)
+    end
+end
+
+-- Register Events
+local events = {
+    "PLAYER_ENTERING_WORLD",
+    "PLAYER_REGEN_DISABLED",
+    "PLAYER_REGEN_ENABLED",
+    "COMBAT_LOG_EVENT_UNFILTERED"
+}
+
+for _, event in ipairs(events) do
+    frame:RegisterEvent(event)
+end
+
+frame:SetScript("OnEvent", function(self, event, ...)
+    BuffCheerAddon:OnEvent(event, ...)
+end)
+
+-- Periodic cleanup of stale cooldowns
+C_Timer.NewTicker(600, function() clearExpiredCooldowns(GetTime()) end)
 
 -- Define the list of thank you messages
 local thankYouMessages = {
