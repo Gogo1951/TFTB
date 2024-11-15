@@ -16,7 +16,7 @@ BuffCheerAddon.config = {
         "CHEER",
         "SALUTE",
         "SMILE",
-        "THANK",
+        "THANK"
     }
 }
 
@@ -67,9 +67,12 @@ function BuffCheerAddon:OnEvent(event, ...)
     elseif event == "PLAYER_ENTERING_WORLD" then
         self.state.hasLoggedIn = true
         self.state.enterTime = GetTime()
-        C_Timer.After(self.config.loginDelay, function()
-            self.state.hasLoggedIn = false
-        end)
+        C_Timer.After(
+            self.config.loginDelay,
+            function()
+                self.state.hasLoggedIn = false
+            end
+        )
     end
 end
 
@@ -85,12 +88,20 @@ for _, event in ipairs(events) do
     frame:RegisterEvent(event)
 end
 
-frame:SetScript("OnEvent", function(self, event, ...)
-    BuffCheerAddon:OnEvent(event, ...)
-end)
+frame:SetScript(
+    "OnEvent",
+    function(self, event, ...)
+        BuffCheerAddon:OnEvent(event, ...)
+    end
+)
 
 -- Periodic cleanup of stale cooldowns
-C_Timer.NewTicker(600, function() clearExpiredCooldowns(GetTime()) end)
+C_Timer.NewTicker(
+    600,
+    function()
+        clearExpiredCooldowns(GetTime())
+    end
+)
 
 -- Define the list of thank you messages
 local thankYouMessages = {
@@ -109,14 +120,14 @@ local thankYouMessages = {
     "Thanks! My hero!",
     "Keep that up and you just might get added to my friends list. Thanks!",
     "I appreciate you, thanks!",
-    "Nice! Thanks for doing what you do!",
+    "Nice! Thanks for doing what you do!"
 }
 
 -- Function to cheer and send a random thank you message to the target
 local function cheerAndThankTarget()
     -- Select a random message from the list
     local message = thankYouMessages[math.random(#thankYouMessages)]
-    
+
     -- Send a cheer emote
     DoEmote("cheer")
 
