@@ -2,7 +2,7 @@
 
 A simple add-on that automatically expresses happiness with an emote whenever you receive a new buff.
 
-* Will only work when you are out of combat.
+* Will only work when you are not in combat.
 * Will only work when you receive buffs from people outside of your party / raid group.
 
 🎁 There is also a built-in `/thankyou` slash command to send a thank-you message to the targeted player. You can set this up as a macro for when someone tosses you a heal, gives you some water or a portal, or whatever.
