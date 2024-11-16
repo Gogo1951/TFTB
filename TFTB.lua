@@ -30,6 +30,17 @@ local function clearExpiredCooldowns(now)
     end
 end
 
+-- Check if a player is in your party or raid
+local function isInPartyOrRaid(sourceGUID)
+    for i = 1, GetNumGroupMembers() do
+        local unitID = IsInRaid() and "raid" .. i or "party" .. i
+        if UnitGUID(unitID) == sourceGUID then
+            return true
+        end
+    end
+    return false
+end
+
 function BuffCheerAddon:shouldProcessEvent()
     return not self.state.hasLoggedIn and not self.state.inCombat
 end
@@ -49,6 +60,11 @@ function BuffCheerAddon:OnCombatEvent(...)
     clearExpiredCooldowns(now)
 
     if destGUID == UnitGUID("player") and sourceGUID ~= UnitGUID("player") then
+        -- Check if the source is in the same party or raid
+        if isInPartyOrRaid(sourceGUID) then
+            return -- Skip thanking party/raid members
+        end
+
         if not self.thankCooldown[sourceGUID] then
             self.thankCooldown[sourceGUID] = now + self.config.cooldownDuration
             local emote = self.config.randomEmotes[math.random(1, #self.config.randomEmotes)]
