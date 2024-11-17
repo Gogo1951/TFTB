@@ -11,12 +11,23 @@ BuffCheerAddon.config = {
     cooldownDuration = 5,
     loginDelay = 5,
     randomEmotes = {
+        -- https://warcraft.wiki.gg/wiki/List_of_emotes
         "APPLAUD",
         "BOW",
         "CHEER",
+        "DRINK",
+        "FLEX",
+        "GRIN",
+        "HIGHFIVE",
+        "PRAISE",
         "SALUTE",
         "SMILE",
-        "THANK"
+        "THANK",
+        "THANK",
+        "WAVE",
+        "WHOA",
+        "WINK",
+        "YES",
     }
 }
 
