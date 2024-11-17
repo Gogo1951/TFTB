@@ -165,7 +165,7 @@ local function cheerAndThankTarget()
         -- Send the thank you message as a whisper to the target
         SendChatMessage(message, "WHISPER", nil, targetName)
     else
-        print("No target selected. Please select a target to thank!")
+        print("|cff4FC3F7TFTB|r : No target selected. Please select a player to thank.")
     end
 end
 
