@@ -23,7 +23,6 @@ BuffCheerAddon.config = {
         "SALUTE",
         "SMILE",
         "THANK",
-        "THANK",
         "WAVE",
         "WHOA",
         "WINK",
