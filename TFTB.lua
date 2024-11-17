@@ -149,20 +149,23 @@ local thankYouMessages = {
     "Nice! Thanks for doing what you do!"
 }
 
--- Function to cheer and send a random thank you message to the target
+-- Function to use a random emote and send a thank you message to the target
 local function cheerAndThankTarget()
-    -- Select a random message from the list
-    local message = thankYouMessages[math.random(#thankYouMessages)]
-
-    -- Send a cheer emote
-    DoEmote("cheer")
-
-    -- Send the thank you message as a whisper to the target
+    -- Get the current target's name
     local targetName = GetUnitName("target", true)
+
     if targetName then
+        -- Select a random emote from the list
+        local emote = BuffCheerAddon.config.randomEmotes[math.random(#BuffCheerAddon.config.randomEmotes)]
+        local message = thankYouMessages[math.random(#thankYouMessages)]
+
+        -- Perform the emote targeted at the player
+        DoEmote(emote, targetName)
+
+        -- Send the thank you message as a whisper to the target
         SendChatMessage(message, "WHISPER", nil, targetName)
     else
-        print("No target selected.")
+        print("No target selected. Please select a target to thank!")
     end
 end
 
