@@ -26,7 +26,7 @@ BuffCheerAddon.config = {
         "WAVE",
         "WHOA",
         "WINK",
-        "YES",
+        "YES"
     }
 }
 
