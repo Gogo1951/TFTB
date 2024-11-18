@@ -132,21 +132,7 @@ C_Timer.NewTicker(
 -- Define the list of thank you messages
 local thankYouMessages = {
     "Thanks, you're the best! (=",
-    "Great job! Thank you for that.",
-    "Amazing, you're a legend!",
-    "Thanks! That was just what I needed.",
-    "You're really good at that -- you must practice a lot!",
-    "That was so solid! Thanks for being so reliable.",
-    "I don't care what everyone else says, you're amazing in my book!",
-    "Wish everyone was like you, thanks!",
-    "Great skills, I respect that! Thanks!",
-    "You're absolutely fantastic -- thank you so much!",
-    "Nicely done! You're really good at helping out.",
-    "You deserve all the credit. Thank you!",
-    "Thanks! My hero!",
-    "Keep that up and you just might get added to my friends list. Thanks!",
-    "I appreciate you, thanks!",
-    "Nice! Thanks for doing what you do!"
+    -- add more messages if you want to have them seem more "random." Got too much hate on Reddit for this feature so I scaled it back.
 }
 
 -- Function to use a random emote and send a thank you message to the target
