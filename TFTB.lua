@@ -11,7 +11,6 @@ BuffCheerAddon.config = {
     cooldownDuration = 5,
     loginDelay = 5,
     randomEmotes = {
-        -- https://warcraft.wiki.gg/wiki/List_of_emotes
         "APPLAUD",
         "BOW",
         "CHEER",
@@ -68,6 +67,11 @@ function BuffCheerAddon:OnCombatEvent(...)
     end
 
     clearExpiredCooldowns(now)
+
+    -- Ignore buffs from pets or guardians
+    if sourceGUID:find("Pet-") or sourceGUID:find("Guardian-") then
+        return
+    end
 
     if destGUID == UnitGUID("player") and sourceGUID ~= UnitGUID("player") then
         -- Check if the source is in the same party or raid
@@ -132,7 +136,7 @@ C_Timer.NewTicker(
 -- Define the list of thank you messages
 local thankYouMessages = {
     "Thanks, you're the best! (=",
-    -- add more messages if you want to have them seem more "random." Got too much hate on Reddit for this feature so I scaled it back.
+    -- Add more messages here as desired
 }
 
 -- Function to use a random emote and send a thank you message to the target
@@ -151,7 +155,7 @@ local function cheerAndThankTarget()
         -- Send the thank you message as a whisper to the target
         SendChatMessage(message, "WHISPER", nil, targetName)
     else
-        print("|cff4FC3F7TFTB|r : No target selected. Please select a player to thank.")
+        print("|cff00C853TFTB|r : No target selected. Please select a player to thank.")
     end
 end
 
