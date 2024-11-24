@@ -135,7 +135,7 @@ C_Timer.NewTicker(
 
 -- Define the list of thank you messages
 local thankYouMessages = {
-    "Thanks, you're the best! (=",
+    "Thanks, you're the best! (="
     -- Add more messages here as desired
 }
 
