@@ -1,14 +1,10 @@
-local BuffCheerAddon = {}
+local TFTB = {}
 local frame = CreateFrame("Frame")
 
-BuffCheerAddon.state = {
-    inCombat = false,
-    hasLoggedIn = false,
-    enterTime = nil
-}
-
-BuffCheerAddon.config = {
-    cooldownDuration = 5,
+-- State, Config, and Cooldown Management
+TFTB.state = {inCombat = false, hasLoggedIn = false, enterTime = nil}
+TFTB.config = {
+    cooldownDuration = 10,
     loginDelay = 5,
     randomEmotes = {
         "APPLAUD",
@@ -28,21 +24,19 @@ BuffCheerAddon.config = {
         "YES"
     }
 }
-
-BuffCheerAddon.thankCooldown = {}
+TFTB.cooldowns = {}
 
 local function clearExpiredCooldowns(now)
-    for key, value in pairs(BuffCheerAddon.thankCooldown) do
-        if value < now then
-            BuffCheerAddon.thankCooldown[key] = nil
+    for key, expiry in pairs(TFTB.cooldowns) do
+        if expiry < now then
+            TFTB.cooldowns[key] = nil
         end
     end
 end
 
--- Check if a player is in your party or raid
-local function isInPartyOrRaid(sourceGUID)
+local function isInPartyRaidOrBG(sourceGUID)
     for i = 1, GetNumGroupMembers() do
-        local unitID = IsInRaid() and "raid" .. i or "party" .. i
+        local unitID = UnitInBattleground("player") and "raid" .. i or IsInRaid() and "raid" .. i or "party" .. i
         if UnitGUID(unitID) == sourceGUID then
             return true
         end
@@ -50,44 +44,42 @@ local function isInPartyOrRaid(sourceGUID)
     return false
 end
 
-function BuffCheerAddon:shouldProcessEvent()
+-- Function to determine if the event should be processed
+function TFTB:shouldProcessEvent()
     return not self.state.hasLoggedIn and not self.state.inCombat
 end
 
-function BuffCheerAddon:OnCombatEvent(...)
-    local _, subEvent, _, sourceGUID, sourceName, _, _, destGUID, _, _, _, spellName = ...
+-- Combat Log Event Processing
+function TFTB:OnCombatEvent(...)
+    local _, subEvent, _, sourceGUID, sourceName, sourceFlags, _, destGUID, _, _, _, spellName = ...
     local now = GetTime()
 
     if subEvent ~= "SPELL_AURA_APPLIED" or not self:shouldProcessEvent() then
         return
     end
 
-    if not sourceName or not spellName then
-        return -- Ignore invalid data
-    end
-
     clearExpiredCooldowns(now)
 
-    -- Ignore buffs from pets or guardians
-    if sourceGUID:find("Pet-") or sourceGUID:find("Guardian-") then
+    -- Ignore NPC buffs or invalid data
+    if not sourceName or bit.band(sourceFlags, COMBATLOG_OBJECT_TYPE_NPC) > 0 then
         return
     end
 
-    if destGUID == UnitGUID("player") and sourceGUID ~= UnitGUID("player") then
-        -- Check if the source is in the same party or raid
-        if isInPartyOrRaid(sourceGUID) then
-            return -- Skip thanking party/raid members
-        end
+    -- Ensure the source isn't in your party, raid, or battleground group
+    if isInPartyRaidOrBG(sourceGUID) then
+        return
+    end
 
-        if not self.thankCooldown[sourceGUID] then
-            self.thankCooldown[sourceGUID] = now + self.config.cooldownDuration
-            local emote = self.config.randomEmotes[math.random(1, #self.config.randomEmotes)]
-            DoEmote(emote, sourceName)
-        end
+    -- Avoid sending multiple thanks during the cooldown
+    if destGUID == UnitGUID("player") and not TFTB.cooldowns[sourceGUID] then
+        TFTB.cooldowns[sourceGUID] = now + TFTB.config.cooldownDuration
+        local emote = TFTB.config.randomEmotes[math.random(#TFTB.config.randomEmotes)]
+        pcall(DoEmote, emote, sourceName)
     end
 end
 
-function BuffCheerAddon:OnEvent(event, ...)
+-- Event Handlers
+function TFTB:OnEvent(event, ...)
     if event == "COMBAT_LOG_EVENT_UNFILTERED" then
         self:OnCombatEvent(CombatLogGetCurrentEventInfo())
     elseif event == "PLAYER_REGEN_DISABLED" then
@@ -96,7 +88,7 @@ function BuffCheerAddon:OnEvent(event, ...)
         self.state.inCombat = false
     elseif event == "PLAYER_ENTERING_WORLD" then
         self.state.hasLoggedIn = true
-        self.state.enterTime = GetTime()
+        -- Delay processing events after login
         C_Timer.After(
             self.config.loginDelay,
             function()
@@ -107,21 +99,14 @@ function BuffCheerAddon:OnEvent(event, ...)
 end
 
 -- Register Events
-local events = {
-    "PLAYER_ENTERING_WORLD",
-    "PLAYER_REGEN_DISABLED",
-    "PLAYER_REGEN_ENABLED",
-    "COMBAT_LOG_EVENT_UNFILTERED"
-}
-
-for _, event in ipairs(events) do
-    frame:RegisterEvent(event)
-end
-
+frame:RegisterEvent("PLAYER_ENTERING_WORLD")
+frame:RegisterEvent("PLAYER_REGEN_DISABLED")
+frame:RegisterEvent("PLAYER_REGEN_ENABLED")
+frame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
 frame:SetScript(
     "OnEvent",
-    function(self, event, ...)
-        BuffCheerAddon:OnEvent(event, ...)
+    function(_, event, ...)
+        TFTB:OnEvent(event, ...)
     end
 )
 
@@ -146,7 +131,7 @@ local function cheerAndThankTarget()
 
     if targetName then
         -- Select a random emote from the list
-        local emote = BuffCheerAddon.config.randomEmotes[math.random(#BuffCheerAddon.config.randomEmotes)]
+        local emote = TFTB.config.randomEmotes[math.random(#TFTB.config.randomEmotes)]
         local message = thankYouMessages[math.random(#thankYouMessages)]
 
         -- Perform the emote targeted at the player
