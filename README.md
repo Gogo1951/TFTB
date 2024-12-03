@@ -13,7 +13,7 @@ You can find this on Curseforge.
 
 https://www.curseforge.com/wow/addons/thanks-for-the-buff-revisited
 
-## Testing Notes
+## Testing Status
 
 🟢 World of Warcraft Classic : Classic Era
 
@@ -37,7 +37,7 @@ You can find this project on GitHub.
 
 https://github.com/Gogo1951/TFTB
 
-Gogo1951 on Discord.
+😈 Gogo1951 on Discord.
 
 ## History
 
