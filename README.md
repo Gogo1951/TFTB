@@ -21,19 +21,21 @@ https://www.curseforge.com/wow/addons/thanks-for-the-buff-revisited
 
 🟢 Season of Discovery
 
+🟢 Classic Anniversary
+
 🔴 Cataclysm Classic
 
 🔴 Retail
 
 Feel free to reach out if you're interested in helping with testing. 
 
-Gogo1951 on Discord.
-
 ## Report Issues & Get Involved
 
 You can find this project on GitHub.
 
 https://github.com/Gogo1951/TFTB
+
+Gogo1951 on Discord.
 
 ## History
 
