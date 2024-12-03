@@ -7,7 +7,6 @@ TFTB.config = {
     cooldownDuration = 10,
     loginDelay = 5,
     randomEmotes = {
-        "APPLAUD",
         "BOW",
         "CHEER",
         "DRINK",
@@ -18,7 +17,6 @@ TFTB.config = {
         "SALUTE",
         "SMILE",
         "THANK",
-        "WAVE",
         "WHOA",
         "WINK",
         "YES"
@@ -62,6 +60,11 @@ function TFTB:OnCombatEvent(...)
 
     -- Ignore NPC buffs or invalid data
     if not sourceName or bit.band(sourceFlags, COMBATLOG_OBJECT_TYPE_NPC) > 0 then
+        return
+    end
+
+    -- Ensure the source isn't the player (self-buff check)
+    if sourceGUID == UnitGUID("player") then
         return
     end
 
@@ -117,12 +120,6 @@ C_Timer.NewTicker(
         clearExpiredCooldowns(GetTime())
     end
 )
-
--- Define the list of thank you messages
-local thankYouMessages = {
-    "Thanks, you're the best! (="
-    -- Add more messages here as desired
-}
 
 -- Function to use a random emote and send a thank you message to the target
 local function cheerAndThankTarget()
