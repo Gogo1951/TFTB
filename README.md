@@ -2,8 +2,8 @@
 
 A simple add-on that automatically expresses happiness with an emote whenever you receive a new buff.
 
+* Will only work when you receive buffs from players outside of your party / raid group.
 * Will only work when you are not in combat.
-* Will only work when you receive buffs from people outside of your party / raid group.
 
 🎁 There is also a built-in `/thankyou` slash command to send a thank-you message to the targeted player. You can set this up as a macro for when someone tosses you a heal, gives you some water or a portal, or whatever.
 
@@ -41,6 +41,4 @@ https://github.com/Gogo1951/TFTB
 
 ## History
 
-👏 **Runew0lf created TFTB.**
-
-- [Thanks For The Buff](https://www.curseforge.com/wow/addons/thanks-for-the-buff)
+This is a continuation of Runew0lf's [Thanks For The Buff](https://www.curseforge.com/wow/addons/thanks-for-the-buff).
