@@ -20,10 +20,15 @@ TFTB.config = {
         "WHOA",
         "WINK",
         "YES"
+    },
+    thankYouMessages = {
+        -- Define thank-you messages
+        "Thanks, you're the best! (="
     }
 }
 TFTB.cooldowns = {}
 
+-- Function to clear expired cooldowns
 local function clearExpiredCooldowns(now)
     for key, expiry in pairs(TFTB.cooldowns) do
         if expiry < now then
@@ -32,9 +37,10 @@ local function clearExpiredCooldowns(now)
     end
 end
 
+-- Function to check if a unit is in the party, raid, or battleground
 local function isInPartyRaidOrBG(sourceGUID)
     for i = 1, GetNumGroupMembers() do
-        local unitID = UnitInBattleground("player") and "raid" .. i or IsInRaid() and "raid" .. i or "party" .. i
+        local unitID = IsInRaid() and "raid" .. i or "party" .. i
         if UnitGUID(unitID) == sourceGUID then
             return true
         end
@@ -42,9 +48,20 @@ local function isInPartyRaidOrBG(sourceGUID)
     return false
 end
 
+-- Function to check if a unit is a valid player on the same faction
+local function isValidSameFactionPlayer(unit)
+    if not UnitExists(unit) or not UnitIsPlayer(unit) then
+        return false
+    end
+
+    local playerFaction = UnitFactionGroup("player")
+    local targetFaction = UnitFactionGroup(unit)
+    return playerFaction == targetFaction
+end
+
 -- Function to determine if the event should be processed
 function TFTB:shouldProcessEvent()
-    return not self.state.hasLoggedIn and not self.state.inCombat
+    return self.state.hasLoggedIn == false and self.state.inCombat == false
 end
 
 -- Combat Log Event Processing
@@ -70,6 +87,12 @@ function TFTB:OnCombatEvent(...)
 
     -- Ensure the source isn't in your party, raid, or battleground group
     if isInPartyRaidOrBG(sourceGUID) then
+        return
+    end
+
+    -- Check faction alignment
+    local sourceUnitID = "target"
+    if UnitGUID(sourceUnitID) == sourceGUID and not isValidSameFactionPlayer(sourceUnitID) then
         return
     end
 
@@ -126,10 +149,16 @@ local function cheerAndThankTarget()
     -- Get the current target's name
     local targetName = GetUnitName("target", true)
 
+    -- Check if the target is valid and on the same faction
+    if not isValidSameFactionPlayer("target") then
+        print("|cff00C853TFTB|r : Invalid target. Please select a valid player on the same faction.")
+        return
+    end
+
     if targetName then
         -- Select a random emote from the list
         local emote = TFTB.config.randomEmotes[math.random(#TFTB.config.randomEmotes)]
-        local message = thankYouMessages[math.random(#thankYouMessages)]
+        local message = TFTB.config.thankYouMessages[math.random(#TFTB.config.thankYouMessages)]
 
         -- Perform the emote targeted at the player
         DoEmote(emote, targetName)
