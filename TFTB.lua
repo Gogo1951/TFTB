@@ -4,7 +4,7 @@ local frame = CreateFrame("Frame")
 -- State, Config, and Cooldown Management
 TFTB.state = {inCombat = false, hasLoggedIn = false, enterTime = nil, inRestrictedArea = false}
 TFTB.config = {
-    cooldownDuration = 10,
+    cooldownDuration = 5,
     loginDelay = 5,
     randomEmotes = {
         "BOW",
