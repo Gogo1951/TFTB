@@ -2,7 +2,7 @@ local TFTB = {}
 local frame = CreateFrame("Frame")
 
 -- State, Config, and Cooldown Management
-TFTB.state = {inCombat = false, hasLoggedIn = false, enterTime = nil}
+TFTB.state = {inCombat = false, hasLoggedIn = false, enterTime = nil, inRestrictedArea = false}
 TFTB.config = {
     cooldownDuration = 10,
     loginDelay = 5,
@@ -22,7 +22,6 @@ TFTB.config = {
         "YES"
     },
     thankYouMessages = {
-        -- Define thank-you messages
         "Thanks, you're the best! (="
     }
 }
@@ -34,6 +33,19 @@ local function clearExpiredCooldowns(now)
         if expiry < now then
             TFTB.cooldowns[key] = nil
         end
+    end
+end
+
+-- Function to determine if the player is in a restricted area
+local function updateRestrictedAreaState()
+    local inInstance, instanceType = IsInInstance()
+    TFTB.state.inRestrictedArea =
+        inInstance and (instanceType == "party" or instanceType == "raid" or instanceType == "pvp")
+
+    if TFTB.state.inRestrictedArea then
+        frame:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+    else
+        frame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
     end
 end
 
@@ -61,7 +73,7 @@ end
 
 -- Function to determine if the event should be processed
 function TFTB:shouldProcessEvent()
-    return self.state.hasLoggedIn == false and self.state.inCombat == false
+    return self.state.hasLoggedIn == false and self.state.inCombat == false and not self.state.inRestrictedArea
 end
 
 -- Combat Log Event Processing
@@ -112,15 +124,17 @@ function TFTB:OnEvent(event, ...)
         self.state.inCombat = true
     elseif event == "PLAYER_REGEN_ENABLED" then
         self.state.inCombat = false
-    elseif event == "PLAYER_ENTERING_WORLD" then
-        self.state.hasLoggedIn = true
-        -- Delay processing events after login
-        C_Timer.After(
-            self.config.loginDelay,
-            function()
-                self.state.hasLoggedIn = false
-            end
-        )
+    elseif event == "PLAYER_ENTERING_WORLD" or event == "ZONE_CHANGED_NEW_AREA" then
+        updateRestrictedAreaState()
+        if event == "PLAYER_ENTERING_WORLD" then
+            self.state.hasLoggedIn = true
+            C_Timer.After(
+                self.config.loginDelay,
+                function()
+                    self.state.hasLoggedIn = false
+                end
+            )
+        end
     end
 end
 
@@ -128,7 +142,7 @@ end
 frame:RegisterEvent("PLAYER_ENTERING_WORLD")
 frame:RegisterEvent("PLAYER_REGEN_DISABLED")
 frame:RegisterEvent("PLAYER_REGEN_ENABLED")
-frame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+frame:RegisterEvent("ZONE_CHANGED_NEW_AREA")
 frame:SetScript(
     "OnEvent",
     function(_, event, ...)
