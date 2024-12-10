@@ -7,7 +7,6 @@ TFTB.config = {
     cooldownDuration = 5,
     loginDelay = 5,
     randomEmotes = {
-        "BOW",
         "CHEER",
         "DRINK",
         "FLEX",
@@ -19,10 +18,11 @@ TFTB.config = {
         "THANK",
         "WHOA",
         "WINK",
-        "YES"
+        "YES",
     },
     thankYouMessages = {
-        "Thanks, you're the best! (="
+        "Thanks, you're the best! (=",
+        -- "Your Own Custom Thank You Message!",        
     }
 }
 TFTB.cooldowns = {}
