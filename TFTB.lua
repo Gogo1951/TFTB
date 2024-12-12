@@ -22,7 +22,7 @@ TFTB.config = {
     },
     thankYouMessages = {
         "Thanks, you're the best! (=",
-        -- "Your Own Custom Thank You Message!",        
+        -- "Your Own Custom Thank You Message!",
     }
 }
 TFTB.cooldowns = {}
@@ -89,6 +89,11 @@ function TFTB:OnCombatEvent(...)
 
     -- Ignore NPC buffs or invalid data
     if not sourceName or bit.band(sourceFlags, COMBATLOG_OBJECT_TYPE_NPC) > 0 then
+        return
+    end
+
+    -- Ignore pets
+    if bit.band(sourceFlags, COMBATLOG_OBJECT_TYPE_PET) > 0 then
         return
     end
 
