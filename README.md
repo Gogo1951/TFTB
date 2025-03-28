@@ -33,11 +33,9 @@ Feel free to reach out if you're interested in helping with testing.
 
 ## Report Issues & Get Involved
 
-You can find this project on GitHub.
+You can find this project on GitHub // https://github.com/Gogo1951/TFTB
 
-https://github.com/Gogo1951/TFTB
-
-😈 Gogo1951 on Discord.
+😈 Gogo1951 on Discord // https://discord.gg/eh8hKq992Q
 
 ## History
 
