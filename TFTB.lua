@@ -1,11 +1,30 @@
-local TFTB = {}
-local frame = CreateFrame("Frame")
+local TFTB, frame = {}, CreateFrame("Frame")
 
--- State, Config, and Cooldown Management
-TFTB.state = {inCombat = false, hasLoggedIn = false, enterTime = nil, inRestrictedArea = false}
+local GetTime, CombatLogGetCurrentEventInfo = GetTime, CombatLogGetCurrentEventInfo
+local UnitGUID, UnitExists, UnitIsPlayer, UnitFactionGroup, GetUnitName =
+    UnitGUID,
+    UnitExists,
+    UnitIsPlayer,
+    UnitFactionGroup,
+    GetUnitName
+local DoEmote, SendChatMessage, C_Timer_After, NewTicker = DoEmote, SendChatMessage, C_Timer.After, C_Timer.NewTicker
+local IsInInstance = IsInInstance
+local bit_band, math_random = bit.band, math.random
+
+local OBJ_TYPE_NPC, OBJ_TYPE_PET = COMBATLOG_OBJECT_TYPE_NPC, COMBATLOG_OBJECT_TYPE_PET
+local OBJ_TYPE_PLAYER, OBJ_REACTION_FRIENDLY, OBJ_CONTROL_PLAYER =
+    COMBATLOG_OBJECT_TYPE_PLAYER,
+    COMBATLOG_OBJECT_REACTION_FRIENDLY,
+    COMBATLOG_OBJECT_CONTROL_PLAYER
+local OBJ_AFFIL_OUTSIDER = COMBATLOG_OBJECT_AFFILIATION_OUTSIDER
+local FRIENDLY_MASK = OBJ_TYPE_PLAYER + OBJ_REACTION_FRIENDLY + OBJ_CONTROL_PLAYER
+
+local PLAYER_GUID
+TFTB.state = {inCombat = false, hasLoggedIn = false, inRestrictedArea = false}
 TFTB.config = {
     cooldownDuration = 5,
     loginDelay = 5,
+    disableInInstances = false,
     randomEmotes = {
         "CHEER",
         "DRINK",
@@ -18,132 +37,110 @@ TFTB.config = {
         "THANK",
         "WHOA",
         "WINK",
-        "YES",
+        "YES"
     },
     thankYouMessages = {
-        "Thanks, you're the best! (=",
-        -- "Your Own Custom Thank You Message!",
+        "Thanks, you're the best! (="
+        -- "Your Custom Message Here!",
     }
 }
 TFTB.cooldowns = {}
 
--- Function to clear expired cooldowns
 local function clearExpiredCooldowns(now)
-    for key, expiry in pairs(TFTB.cooldowns) do
-        if expiry < now then
-            TFTB.cooldowns[key] = nil
+    for k, v in pairs(TFTB.cooldowns) do
+        if v < now then
+            TFTB.cooldowns[k] = nil
         end
     end
 end
 
--- Function to determine if the player is in a restricted area
-local function updateRestrictedAreaState()
-    local inInstance, instanceType = IsInInstance()
-    TFTB.state.inRestrictedArea =
-        inInstance and (instanceType == "party" or instanceType == "raid" or instanceType == "pvp")
+local function shouldListen()
+    return not TFTB.state.inCombat and not TFTB.state.hasLoggedIn and not TFTB.state.inRestrictedArea
+end
 
-    if TFTB.state.inRestrictedArea then
-        frame:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
-    else
+local listening
+local function updateCLEURegistration()
+    local want = shouldListen()
+    if want and not listening then
         frame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+        listening = true
+    elseif not want and listening then
+        frame:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+        listening = false
     end
 end
 
--- Function to check if a unit is in the party, raid, or battleground
-local function isInPartyRaidOrBG(sourceGUID)
-    for i = 1, GetNumGroupMembers() do
-        local unitID = IsInRaid() and "raid" .. i or "party" .. i
-        if UnitGUID(unitID) == sourceGUID then
-            return true
-        end
+local function updateRestrictedAreaState()
+    if not TFTB.config.disableInInstances then
+        TFTB.state.inRestrictedArea = false
+    else
+        local inInstance, t = IsInInstance()
+        TFTB.state.inRestrictedArea = inInstance and (t == "party" or t == "raid" or t == "pvp")
     end
-    return false
+    updateCLEURegistration()
 end
 
--- Function to check if a unit is a valid player on the same faction
-local function isValidSameFactionPlayer(unit)
-    if not UnitExists(unit) or not UnitIsPlayer(unit) then
-        return false
+function TFTB:OnCombatEvent()
+    local _, subEvent, _, sourceGUID, sourceName, sourceFlags, _, destGUID = CombatLogGetCurrentEventInfo()
+    if subEvent ~= "SPELL_AURA_APPLIED" then
+        return
+    end
+    if self.state.hasLoggedIn or self.state.inCombat or self.state.inRestrictedArea then
+        return
+    end
+    if destGUID ~= PLAYER_GUID or not sourceName then
+        return
     end
 
-    local playerFaction = UnitFactionGroup("player")
-    local targetFaction = UnitFactionGroup(unit)
-    return playerFaction == targetFaction
-end
+    if bit_band(sourceFlags, OBJ_TYPE_NPC) > 0 or bit_band(sourceFlags, OBJ_TYPE_PET) > 0 then
+        return
+    end
+    if bit_band(sourceFlags, FRIENDLY_MASK) ~= FRIENDLY_MASK then
+        return
+    end
+    if bit_band(sourceFlags, OBJ_AFFIL_OUTSIDER) == 0 then
+        return
+    end
+    if sourceGUID == PLAYER_GUID then
+        return
+    end
 
--- Function to determine if the event should be processed
-function TFTB:shouldProcessEvent()
-    return self.state.hasLoggedIn == false and self.state.inCombat == false and not self.state.inRestrictedArea
-end
-
--- Combat Log Event Processing
-function TFTB:OnCombatEvent(...)
-    local _, subEvent, _, sourceGUID, sourceName, sourceFlags, _, destGUID, _, _, _, spellName = ...
     local now = GetTime()
-
-    if subEvent ~= "SPELL_AURA_APPLIED" or not self:shouldProcessEvent() then
+    local cd = TFTB.cooldowns[sourceGUID]
+    if cd and cd > now then
         return
     end
+    TFTB.cooldowns[sourceGUID] = now + TFTB.config.cooldownDuration
 
-    clearExpiredCooldowns(now)
-
-    -- Ignore NPC buffs or invalid data
-    if not sourceName or bit.band(sourceFlags, COMBATLOG_OBJECT_TYPE_NPC) > 0 then
-        return
-    end
-
-    -- Ignore pets
-    if bit.band(sourceFlags, COMBATLOG_OBJECT_TYPE_PET) > 0 then
-        return
-    end
-
-    -- Ensure the source isn't the player (self-buff check)
-    if sourceGUID == UnitGUID("player") then
-        return
-    end
-
-    -- Ensure the source isn't in your party, raid, or battleground group
-    if isInPartyRaidOrBG(sourceGUID) then
-        return
-    end
-
-    -- Check faction alignment
-    local sourceUnitID = "target"
-    if UnitGUID(sourceUnitID) == sourceGUID and not isValidSameFactionPlayer(sourceUnitID) then
-        return
-    end
-
-    -- Avoid sending multiple thanks during the cooldown
-    if destGUID == UnitGUID("player") and not TFTB.cooldowns[sourceGUID] then
-        TFTB.cooldowns[sourceGUID] = now + TFTB.config.cooldownDuration
-        local emote = TFTB.config.randomEmotes[math.random(#TFTB.config.randomEmotes)]
-        pcall(DoEmote, emote, sourceName)
-    end
+    local emote = TFTB.config.randomEmotes[math_random(#TFTB.config.randomEmotes)]
+    DoEmote(emote, sourceName)
 end
 
--- Event Handlers
-function TFTB:OnEvent(event, ...)
+function TFTB:OnEvent(event)
     if event == "COMBAT_LOG_EVENT_UNFILTERED" then
-        self:OnCombatEvent(CombatLogGetCurrentEventInfo())
+        self:OnCombatEvent()
     elseif event == "PLAYER_REGEN_DISABLED" then
         self.state.inCombat = true
+        updateCLEURegistration()
     elseif event == "PLAYER_REGEN_ENABLED" then
         self.state.inCombat = false
-    elseif event == "PLAYER_ENTERING_WORLD" or event == "ZONE_CHANGED_NEW_AREA" then
+        updateCLEURegistration()
+    elseif event == "PLAYER_ENTERING_WORLD" then
+        PLAYER_GUID = UnitGUID("player")
+        self.state.hasLoggedIn = true
         updateRestrictedAreaState()
-        if event == "PLAYER_ENTERING_WORLD" then
-            self.state.hasLoggedIn = true
-            C_Timer.After(
-                self.config.loginDelay,
-                function()
-                    self.state.hasLoggedIn = false
-                end
-            )
-        end
+        C_Timer_After(
+            self.config.loginDelay,
+            function()
+                self.state.hasLoggedIn = false
+                updateCLEURegistration()
+            end
+        )
+    elseif event == "ZONE_CHANGED_NEW_AREA" then
+        updateRestrictedAreaState()
     end
 end
 
--- Register Events
 frame:RegisterEvent("PLAYER_ENTERING_WORLD")
 frame:RegisterEvent("PLAYER_REGEN_DISABLED")
 frame:RegisterEvent("PLAYER_REGEN_ENABLED")
@@ -155,40 +152,36 @@ frame:SetScript(
     end
 )
 
--- Periodic cleanup of stale cooldowns
-C_Timer.NewTicker(
+NewTicker(
     600,
     function()
         clearExpiredCooldowns(GetTime())
     end
 )
 
--- Function to use a random emote and send a thank you message to the target
-local function cheerAndThankTarget()
-    -- Get the current target's name
-    local targetName = GetUnitName("target", true)
+-- /thankyou
+local function isValidSameFactionPlayer(unit)
+    if not UnitExists(unit) or not UnitIsPlayer(unit) then
+        return false
+    end
+    return UnitFactionGroup("player") == UnitFactionGroup(unit)
+end
 
-    -- Check if the target is valid and on the same faction
+local function cheerAndThankTarget()
+    local targetName = GetUnitName("target", true)
     if not isValidSameFactionPlayer("target") then
         print("|cff00C853TFTB|r : Invalid target. Please select a valid player on the same faction.")
         return
     end
-
     if targetName then
-        -- Select a random emote from the list
-        local emote = TFTB.config.randomEmotes[math.random(#TFTB.config.randomEmotes)]
-        local message = TFTB.config.thankYouMessages[math.random(#TFTB.config.thankYouMessages)]
-
-        -- Perform the emote targeted at the player
+        local emote = TFTB.config.randomEmotes[math_random(#TFTB.config.randomEmotes)]
+        local message = TFTB.config.thankYouMessages[math_random(#TFTB.config.thankYouMessages)]
         DoEmote(emote, targetName)
-
-        -- Send the thank you message as a whisper to the target
         SendChatMessage(message, "WHISPER", nil, targetName)
     else
         print("|cff00C853TFTB|r : No target selected. Please select a player to thank.")
     end
 end
 
--- Register the /thankyou slash command
 SLASH_THANKYOU1 = "/thankyou"
-SlashCmdList["THANKYOU"] = cheerAndThankTarget
+SlashCmdList.THANKYOU = cheerAndThankTarget
