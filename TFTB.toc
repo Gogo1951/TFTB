@@ -4,7 +4,7 @@
 ## X-Curse-Project-ID: 1140285
 
 ## Version: @project-version@
-## Interface: 11507
+## Interface: 110200, 50500, 11507
 ## DefaultState: enabled
 
 TFTB.lua
