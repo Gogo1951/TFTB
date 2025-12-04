@@ -8,6 +8,9 @@ local TFTB = {}
 local frame = CreateFrame("Frame")
 TFTB.frame = frame
 
+---------------------------------------------------------------------------
+-- API Localization & Constants
+---------------------------------------------------------------------------
 local GetTime = GetTime
 local CombatLogGetCurrentEventInfo = CombatLogGetCurrentEventInfo
 local UnitGUID, UnitExists, UnitIsPlayer, UnitIsUnit = UnitGUID, UnitExists, UnitIsPlayer, UnitIsUnit
@@ -31,18 +34,15 @@ local INSTANCE_RESTRICTED = {
     arena = true,
     party = true,
     pvp = true,
-    raid = true
+    raid = true,
 }
 
-local PLAYER_GUID
-local TFTB_State = {
-    inCombat = false,
-    hasLoggedIn = false,
-    inRestrictedArea = false
-}
+---------------------------------------------------------------------------
+-- Configuration
+---------------------------------------------------------------------------
 
 local DEFAULTS = {
-    cooldownDuration = 5,
+    cooldownDuration = 10,
     loginDelay = 10,
     disableInInstances = false,
     randomEmotes = {
@@ -60,25 +60,27 @@ local DEFAULTS = {
         "YES",
     },
     thankYouMessages = {
-        "Thanks, you're the best! (=",
+        "Thanks, you're the best! (="
         -- "Add any custom message you want here! (=",
     }
 }
 
+---------------------------------------------------------------------------
+-- Runtime State & Tables
+---------------------------------------------------------------------------
+local PLAYER_GUID
+
+local TFTB_State = {
+    hasLoggedIn = false,
+    inCombat = false,
+    inRestrictedArea = false,
+}
+
 local sessionCooldowns = {}
 
-local function InitializeDB()
-    if not TFTB_DB then
-        TFTB_DB = {}
-    end
-
-    for k, v in pairs(DEFAULTS) do
-        if TFTB_DB[k] == nil then
-            TFTB_DB[k] = v
-        end
-    end
-end
-
+---------------------------------------------------------------------------
+-- Utility Functions
+---------------------------------------------------------------------------
 local function isOnCooldown(guid)
     local now = GetTime()
     local expiresAt = sessionCooldowns[guid]
@@ -91,6 +93,21 @@ end
 
 local function setCooldown(guid)
     sessionCooldowns[guid] = GetTime() + (TFTB_DB.cooldownDuration or 5)
+end
+
+---------------------------------------------------------------------------
+-- State Management
+---------------------------------------------------------------------------
+local function InitializeDB()
+    if not TFTB_DB then
+        TFTB_DB = {}
+    end
+
+    for k, v in pairs(DEFAULTS) do
+        if TFTB_DB[k] == nil then
+            TFTB_DB[k] = v
+        end
+    end
 end
 
 local function shouldListen()
@@ -119,6 +136,9 @@ local function updateRestrictedAreaState()
     updateCLEURegistration()
 end
 
+---------------------------------------------------------------------------
+-- Event Handlers
+---------------------------------------------------------------------------
 function TFTB:OnCombatEvent()
     local _, subEvent, _, sourceGUID, sourceName, sourceFlags, _, destGUID, _, _, _, _, _, _, auraType =
         CombatLogGetCurrentEventInfo()
@@ -187,6 +207,9 @@ function TFTB:OnEvent(event, ...)
     end
 end
 
+---------------------------------------------------------------------------
+-- Frame Registration
+---------------------------------------------------------------------------
 frame:SetScript(
     "OnEvent",
     function(self, event, ...)
@@ -198,6 +221,9 @@ frame:RegisterEvent("PLAYER_REGEN_DISABLED")
 frame:RegisterEvent("PLAYER_REGEN_ENABLED")
 frame:RegisterEvent("ZONE_CHANGED_NEW_AREA")
 
+---------------------------------------------------------------------------
+-- Slash Commands
+---------------------------------------------------------------------------
 SLASH_THANKYOU1 = "/thankyou"
 SlashCmdList.THANKYOU = function(msg)
     if not UnitExists("target") or not UnitIsPlayer("target") then
