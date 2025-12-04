@@ -1,55 +1,50 @@
-local ADDON_NAME      = "Thanks for the Buff"
-local COLOR_NAME      = "|cffFFEE58"
+local ADDON_NAME = "Thanks for the Buff"
+local COLOR_NAME = "|cffFFEE58"
 local COLOR_SEPARATOR = "|cffF9A825"
-local COLOR_TEXT      = "|cffFFFFFF"
-
+local COLOR_TEXT = "|cffFFFFFF"
 local BRAND_PREFIX = COLOR_NAME .. ADDON_NAME .. "|r " .. COLOR_SEPARATOR .. "//|r " .. COLOR_TEXT
 
 local TFTB = {}
 local frame = CreateFrame("Frame")
 TFTB.frame = frame
 
-local GetTime, CombatLogGetCurrentEventInfo = GetTime, CombatLogGetCurrentEventInfo
-local UnitGUID, UnitExists, UnitIsPlayer, UnitFactionGroup, GetUnitName, UnitIsUnit =
-    UnitGUID,
-    UnitExists,
-    UnitIsPlayer,
-    UnitFactionGroup,
-    GetUnitName,
-    UnitIsUnit
-local DoEmote, SendChatMessage, C_Timer_After, NewTicker = DoEmote, SendChatMessage, C_Timer.After, C_Timer.NewTicker
+local GetTime = GetTime
+local CombatLogGetCurrentEventInfo = CombatLogGetCurrentEventInfo
+local UnitGUID, UnitExists, UnitIsPlayer, UnitIsUnit = UnitGUID, UnitExists, UnitIsPlayer, UnitIsUnit
+local GetUnitName, UnitFactionGroup, UnitName = GetUnitName, UnitFactionGroup, UnitName
+local DoEmote, SendChatMessage = DoEmote, SendChatMessage
+local C_Timer_After = C_Timer.After
 local IsInInstance = IsInInstance
-local bit_band, bit_bor, math_random = bit.band, bit.bor, math.random
+local bit_band, bit_bor = bit.band, bit.bor
+local math_random = math.random
 
-local OBJ_TYPE_NPC, OBJ_TYPE_PET = COMBATLOG_OBJECT_TYPE_NPC, COMBATLOG_OBJECT_TYPE_PET
-local OBJ_TYPE_PLAYER, OBJ_REACTION_FRIENDLY, OBJ_CONTROL_PLAYER =
-    COMBATLOG_OBJECT_TYPE_PLAYER,
-    COMBATLOG_OBJECT_REACTION_FRIENDLY,
-    COMBATLOG_OBJECT_CONTROL_PLAYER
+local OBJ_TYPE_NPC = COMBATLOG_OBJECT_TYPE_NPC
+local OBJ_TYPE_PET = COMBATLOG_OBJECT_TYPE_PET
+local OBJ_TYPE_PLAYER = COMBATLOG_OBJECT_TYPE_PLAYER
+local OBJ_REACTION_FRIENDLY = COMBATLOG_OBJECT_REACTION_FRIENDLY
+local OBJ_CONTROL_PLAYER = COMBATLOG_OBJECT_CONTROL_PLAYER
 local OBJ_AFFIL_OUTSIDER = COMBATLOG_OBJECT_AFFILIATION_OUTSIDER
 
-local FRIENDLY_MASK = bit_bor(OBJ_TYPE_PLAYER, OBJ_REACTION_FRIENDLY, OBJ_CONTROL_PLAYER)
+local FRIENDLY_PLAYER_MASK = bit_bor(OBJ_TYPE_PLAYER, OBJ_REACTION_FRIENDLY, OBJ_CONTROL_PLAYER)
 
 local INSTANCE_RESTRICTED = {
     arena = true,
     party = true,
     pvp = true,
-    raid = true,
+    raid = true
 }
 
 local PLAYER_GUID
-
-TFTB.state = {
+local TFTB_State = {
     inCombat = false,
     hasLoggedIn = false,
-    inRestrictedArea = false,
+    inRestrictedArea = false
 }
 
-TFTB.config = {
+local DEFAULTS = {
     cooldownDuration = 5,
-    loginDelay = 5,
+    loginDelay = 10,
     disableInInstances = false,
-    cooldownCleanupInterval = 600,
     randomEmotes = {
         "CHEER",
         "DRINK",
@@ -65,58 +60,63 @@ TFTB.config = {
         "YES",
     },
     thankYouMessages = {
-        "Thanks, you're the best! (="
-        -- "Your Custom Message Here!",
+        "Thanks, you're the best! (=",
+        -- "Add any custom message you want here! (=",
     }
 }
 
-TFTB.cooldowns = {}
+local sessionCooldowns = {}
 
-local function clearExpiredCooldowns(now)
-    for guid, expiresAt in pairs(TFTB.cooldowns) do
-        if expiresAt < now then
-            TFTB.cooldowns[guid] = nil
+local function InitializeDB()
+    if not TFTB_DB then
+        TFTB_DB = {}
+    end
+
+    for k, v in pairs(DEFAULTS) do
+        if TFTB_DB[k] == nil then
+            TFTB_DB[k] = v
         end
     end
 end
 
-local function isOnCooldown(guid, now)
-    local expiresAt = TFTB.cooldowns[guid]
-    return expiresAt ~= nil and expiresAt > now
+local function isOnCooldown(guid)
+    local now = GetTime()
+    local expiresAt = sessionCooldowns[guid]
+
+    if expiresAt and expiresAt > now then
+        return true
+    end
+    return false
 end
 
-local function setCooldown(guid, now)
-    TFTB.cooldowns[guid] = now + TFTB.config.cooldownDuration
+local function setCooldown(guid)
+    sessionCooldowns[guid] = GetTime() + (TFTB_DB.cooldownDuration or 5)
 end
 
 local function shouldListen()
-    return not TFTB.state.inCombat and not TFTB.state.hasLoggedIn and not TFTB.state.inRestrictedArea
+    return not TFTB_State.inCombat and not TFTB_State.hasLoggedIn and not TFTB_State.inRestrictedArea
 end
 
-local listening = false
+local isListening = false
 local function updateCLEURegistration()
     local shouldListenNow = shouldListen()
-    if shouldListenNow and not listening then
+    if shouldListenNow and not isListening then
         frame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
-        listening = true
-    elseif not shouldListenNow and listening then
+        isListening = true
+    elseif not shouldListenNow and isListening then
         frame:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
-        listening = false
+        isListening = false
     end
 end
 
 local function updateRestrictedAreaState()
-    if not TFTB.config.disableInInstances then
-        TFTB.state.inRestrictedArea = false
+    if not TFTB_DB.disableInInstances then
+        TFTB_State.inRestrictedArea = false
     else
         local inInstance, instanceType = IsInInstance()
-        TFTB.state.inRestrictedArea = inInstance and INSTANCE_RESTRICTED[instanceType] or false
+        TFTB_State.inRestrictedArea = inInstance and INSTANCE_RESTRICTED[instanceType] or false
     end
     updateCLEURegistration()
-end
-
-local function isSuppressedByState()
-    return TFTB.state.hasLoggedIn or TFTB.state.inCombat or TFTB.state.inRestrictedArea
 end
 
 function TFTB:OnCombatEvent()
@@ -127,19 +127,15 @@ function TFTB:OnCombatEvent()
         return
     end
 
-    if isSuppressedByState() then
-        return
-    end
-
     if destGUID ~= PLAYER_GUID or not sourceName then
         return
     end
 
-    if bit_band(sourceFlags, OBJ_TYPE_NPC) ~= 0 or bit_band(sourceFlags, OBJ_TYPE_PET) ~= 0 then
+    if bit_band(sourceFlags, FRIENDLY_PLAYER_MASK) ~= FRIENDLY_PLAYER_MASK then
         return
     end
 
-    if bit_band(sourceFlags, FRIENDLY_MASK) ~= FRIENDLY_MASK then
+    if bit_band(sourceFlags, OBJ_TYPE_NPC) ~= 0 or bit_band(sourceFlags, OBJ_TYPE_PET) ~= 0 then
         return
     end
 
@@ -151,103 +147,87 @@ function TFTB:OnCombatEvent()
         return
     end
 
-    local now = GetTime()
-    if isOnCooldown(sourceGUID, now) then
+    if isOnCooldown(sourceGUID) then
         return
     end
 
-    setCooldown(sourceGUID, now)
+    setCooldown(sourceGUID)
 
-    local emote = TFTB.config.randomEmotes[math_random(#TFTB.config.randomEmotes)]
-    DoEmote(emote, sourceName)
+    local emotes = TFTB_DB.randomEmotes
+    if emotes and #emotes > 0 then
+        DoEmote(emotes[math_random(#emotes)], sourceName)
+    end
 end
 
 function TFTB:OnEvent(event, ...)
     if event == "COMBAT_LOG_EVENT_UNFILTERED" then
         self:OnCombatEvent()
-    elseif event == "PLAYER_REGEN_DISABLED" then
-        self.state.inCombat = true
-        updateCLEURegistration()
-    elseif event == "PLAYER_REGEN_ENABLED" then
-        self.state.inCombat = false
-        updateCLEURegistration()
     elseif event == "PLAYER_ENTERING_WORLD" then
         PLAYER_GUID = UnitGUID("player")
-        self.state.hasLoggedIn = true
+        InitializeDB()
+
+        TFTB_State.hasLoggedIn = true
         updateRestrictedAreaState()
 
         C_Timer_After(
-            self.config.loginDelay,
+            TFTB_DB.loginDelay,
             function()
-                TFTB.state.hasLoggedIn = false
+                TFTB_State.hasLoggedIn = false
                 updateCLEURegistration()
             end
         )
+    elseif event == "PLAYER_REGEN_DISABLED" then
+        TFTB_State.inCombat = true
+        updateCLEURegistration()
+    elseif event == "PLAYER_REGEN_ENABLED" then
+        TFTB_State.inCombat = false
+        updateCLEURegistration()
     elseif event == "ZONE_CHANGED_NEW_AREA" then
         updateRestrictedAreaState()
     end
 end
 
+frame:SetScript(
+    "OnEvent",
+    function(self, event, ...)
+        TFTB:OnEvent(event, ...)
+    end
+)
 frame:RegisterEvent("PLAYER_ENTERING_WORLD")
 frame:RegisterEvent("PLAYER_REGEN_DISABLED")
 frame:RegisterEvent("PLAYER_REGEN_ENABLED")
 frame:RegisterEvent("ZONE_CHANGED_NEW_AREA")
 
-frame:SetScript(
-    "OnEvent",
-    function(_, event, ...)
-        TFTB:OnEvent(event, ...)
-    end
-)
-
-NewTicker(
-    TFTB.config.cooldownCleanupInterval,
-    function()
-        clearExpiredCooldowns(GetTime())
-    end
-)
-
-------------------------------------------------------------
--- /thankyou slash command
-------------------------------------------------------------
-
-local function isValidPlayer(unit)
-    return UnitExists(unit) and UnitIsPlayer(unit)
-end
-
-local function cheerAndThankTarget()
-    if not UnitExists("target") then
-        print(BRAND_PREFIX .. "No target selected. Please select a player to thank.")
-        return
-    end
-
-    if not isValidPlayer("target") then
-        print(BRAND_PREFIX .. "Invalid target. Please select a player to thank.")
+SLASH_THANKYOU1 = "/thankyou"
+SlashCmdList.THANKYOU = function(msg)
+    if not UnitExists("target") or not UnitIsPlayer("target") then
+        print(BRAND_PREFIX .. "Select a player to thank.")
         return
     end
 
     if UnitIsUnit("target", "player") then
-        print(BRAND_PREFIX .. "Invalid target. It's weird you want to thank yourself...")
+        print(BRAND_PREFIX .. "You can't thank yourself!")
         return
     end
 
-    local targetName = GetUnitName("target", true)
-    if not targetName then
-        print(BRAND_PREFIX .. "Could not determine target name.")
-        return
+    local targetName, targetRealm = UnitName("target")
+    local fullName = targetName
+    if targetRealm then
+        fullName = targetName .. "-" .. targetRealm
     end
 
-    local emote = TFTB.config.randomEmotes[math_random(#TFTB.config.randomEmotes)]
-    local message = TFTB.config.thankYouMessages[math_random(#TFTB.config.thankYouMessages)]
-
-    DoEmote(emote, targetName)
+    local emotes = TFTB_DB.randomEmotes
+    if emotes and #emotes > 0 then
+        DoEmote(emotes[math_random(#emotes)], targetName)
+    end
 
     local playerFaction = UnitFactionGroup("player")
     local targetFaction = UnitFactionGroup("target")
-    if playerFaction and targetFaction and playerFaction == targetFaction then
-        SendChatMessage(message, "WHISPER", nil, targetName)
+
+    if playerFaction == targetFaction then
+        local msgs = TFTB_DB.thankYouMessages
+        if msgs and #msgs > 0 then
+            SendChatMessage(msgs[math_random(#msgs)], "WHISPER", nil, fullName)
+        end
     end
 end
-
-SLASH_THANKYOU1 = "/thankyou"
-SlashCmdList.THANKYOU = cheerAndThankTarget
