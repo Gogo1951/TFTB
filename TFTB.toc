@@ -1,10 +1,15 @@
 ## Title: Thanks for the Buff!
 ## Notes: A simple add-on that automatically expresses happiness with an emote whenever you receive a new buff.
-## Author: Gogo & TechnoHunter#2706
+## Author: Gogo1951
+
+## Interface: 110205, 50502, 11508
+## Version: @project-version@
 ## X-Curse-Project-ID: 1140285
 
-## Version: @project-version@
-## Interface: 110205, 50502, 11508
-## DefaultState: enabled
-
+# Thanks for the Buff!
 TFTB.lua
+
+# Feedback Welcome! (=
+# Thanks for the Buff! on CurseForge // https://www.curseforge.com/wow/addons/thanks-for-the-buff-revisited
+# Thanks for the Buff! on GitHub // https://github.com/Gogo1951/Thanks-for-the-Buff
+# Thanks for the Buff! on Discord // https://discord.gg/eh8hKq992Q
