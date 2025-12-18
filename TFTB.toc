@@ -3,7 +3,7 @@
 ## Author: Gogo1951
 ## X-License: MIT
 
-## Interface: 110205, 50502, 11508
+## Interface: 11508, 20505, 50502, 110205
 ## Version: @project-version@
 ## X-Curse-Project-ID: 1140285
 
