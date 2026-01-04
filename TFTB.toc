@@ -1,9 +1,12 @@
 ## Title: Thanks for the Buff!
-## Notes: A simple add-on that automatically expresses happiness with an emote whenever you receive a new buff.
+## Notes: Automatically express happiness with an emote whenever you receive a new buff. 
 ## Author: Gogo1951
+
+## IconTexture: Interface\AddOns\TFTB\TFTB.tga
+## Category-enUS: Buffs & Debuffs
 ## X-License: MIT
 
-## Interface: 11508, 20505, 50502, 110205
+## Interface: 11508, 20505, 50503, 110207
 ## Version: @project-version@
 ## X-Curse-Project-ID: 1140285
 
