@@ -15,19 +15,13 @@ https://www.curseforge.com/wow/addons/thanks-for-the-buff-revisited
 
 ## Testing Status
 
-🟢 World of Warcraft Classic : Classic Era
+🟢 World of Warcraft Classic
 
-🟢 World of Warcraft Classic : Hardcore
+🟢 Burning Crusade Anniversary
 
-🟢 World of Warcraft Classic : Season of Discovery
+🟡 Mists of Pandaria Classic
 
-🟢 World of Warcraft Classic : Anniversary Realms
-
-🟢 World of Warcraft Classic : Hardcore Anniversary Realms
-
-🔴 Mists of Pandaria Classic
-
-🔴 World of Warcraft
+🟡 World of Warcraft
 
 Feel free to reach out if you're interested in helping with testing. 
 
