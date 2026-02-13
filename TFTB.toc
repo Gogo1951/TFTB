@@ -10,8 +10,23 @@
 ## Version: @project-version@
 ## X-Curse-Project-ID: 1140285
 
+## SavedVariables: TFTB_DB
+
+# Includes
+Includes\LibStub\LibStub.lua
+Includes\CallbackHandler-1.0\CallbackHandler-1.0.xml
+Includes\AceAddon-3.0\AceAddon-3.0.xml
+Includes\AceEvent-3.0\AceEvent-3.0.xml
+Includes\AceDB-3.0\AceDB-3.0.xml
+Includes\AceDBOptions-3.0\AceDBOptions-3.0.xml
+Includes\AceConsole-3.0\AceConsole-3.0.xml
+Includes\AceGUI-3.0\AceGUI-3.0.xml
+Includes\AceConfig-3.0\AceConfig-3.0.xml
+
 # Thanks for the Buff!
-TFTB.lua
+Data.lua
+Core.lua
+Options.lua
 
 # Feedback Welcome! (=
 # Thanks for the Buff! on CurseForge // https://www.curseforge.com/wow/addons/thanks-for-the-buff-revisited
