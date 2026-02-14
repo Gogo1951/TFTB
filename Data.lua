@@ -5,7 +5,7 @@ ns.Data = {}
 -- Colors & Branding
 ---------------------------------------------------------------------------
 ns.Data.COLORS = {
-    TITLE = "ffd700", -- Gold
+    TITLE = "FFD700", -- Gold
     BRAND = "00BBFF", -- Blue
     SEP = "AAAAAA", -- Gray
     TEXT = "FFFFFF", -- White
@@ -35,11 +35,12 @@ ns.Data.ADDON_TITLE = "Thanks for the Buff"
 ---------------------------------------------------------------------------
 ns.Data.SPELL_LIST = {
     ["DEATHKNIGHT"] = {
-        {name = "Hysteria", ids = {49016}}
+        {name = "Unholy Frenzy", ids = {49016}}
     },
     ["DRUID"] = {
         {name = "Innervate", ids = {29166}},
-        {name = "Rebirth", ids = {20484, 20739, 20742, 20747, 20748, 26994, 48477}}
+        {name = "Rebirth", ids = {20484, 20739, 20742, 20747, 20748, 26994, 48477}},
+        {name = "Ironbark", ids = {102342}}
     },
     ["HUNTER"] = {
         {name = "Master's Call", ids = {53271}},
@@ -47,7 +48,9 @@ ns.Data.SPELL_LIST = {
         {name = "Roar of Sacrifice", ids = {53480}}
     },
     ["MAGE"] = {
-        {name = "Focus Magic", ids = {54646}}
+        {name = "Focus Magic", ids = {54646}},
+        {name = "Amplify Magic", ids = {1008, 604, 8450, 8451, 10169, 10170, 27130, 43017}},
+        {name = "Dampen Magic", ids = {603, 1581, 10173, 10174, 27128, 43015}}
     },
     ["PALADIN"] = {
         {name = "Divine Intervention", ids = {19752}},
@@ -55,13 +58,15 @@ ns.Data.SPELL_LIST = {
         {name = "Hand of Protection", ids = {1022, 5599, 10278}},
         {name = "Hand of Sacrifice", ids = {6940, 20729, 27147, 27148}},
         {name = "Hand of Salvation", ids = {1038}},
-        {name = "Lay on Hands", ids = {633, 2800, 10310, 27154, 48788}}
+        {name = "Lay on Hands", ids = {633, 2800, 10310, 27154, 48788}},
+        {name = "Beacon of Light", ids = {53563}}
     },
     ["PRIEST"] = {
         {name = "Fear Ward", ids = {6346}},
         {name = "Guardian Spirit", ids = {47788}},
         {name = "Pain Suppression", ids = {33206}},
-        {name = "Power Infusion", ids = {10060}}
+        {name = "Power Infusion", ids = {10060}},
+        {name = "Leap of Faith", ids = {73325}}
     },
     ["ROGUE"] = {
         {name = "Tricks of the Trade", ids = {57934}}
@@ -70,7 +75,8 @@ ns.Data.SPELL_LIST = {
         {name = "Water Walking", ids = {546}},
         {name = "Water Breathing", ids = {131}},
         {name = "Bloodlust", ids = {2825}},
-        {name = "Heroism", ids = {32182}}
+        {name = "Heroism", ids = {32182}},
+        {name = "Earth Shield", ids = {974, 32593, 32594, 49283, 49284}}
     },
     ["WARLOCK"] = {
         {name = "Soulstone", ids = {20707, 20710, 20712, 20714, 20716, 20718, 47883}},
@@ -82,7 +88,6 @@ ns.Data.SPELL_LIST = {
     }
 }
 
--- Original 12 Emotes
 ns.Data.EMOTES_LIST = {
     "CHEER",
     "DRINK",
