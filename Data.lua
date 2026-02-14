@@ -9,6 +9,7 @@ ns.Data.COLORS = {
     BRAND = "00BBFF", -- Blue
     SEP = "AAAAAA", -- Gray
     TEXT = "FFFFFF", -- White
+
     -- Class Colors
     DRUID = "FF7D0A",
     HUNTER = "ABD473",
@@ -25,6 +26,7 @@ ns.Data.COLORS = {
     EVOKER = "33937F"
 }
 
+ns.Data.SAFETY_PAUSE = 3
 ns.Data.MACRO_NAME = "- Thank"
 ns.Data.ADDON_TITLE = "Thanks for the Buff"
 
