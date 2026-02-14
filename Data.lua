@@ -57,7 +57,6 @@ ns.Data.SPELL_LIST = {
         {name = "Hand of Freedom", ids = {1044}},
         {name = "Hand of Protection", ids = {1022, 5599, 10278}},
         {name = "Hand of Sacrifice", ids = {6940, 20729, 27147, 27148}},
-        {name = "Hand of Salvation", ids = {1038}},
         {name = "Lay on Hands", ids = {633, 2800, 10310, 27154, 48788}},
         {name = "Beacon of Light", ids = {53563}}
     },
@@ -153,3 +152,4 @@ ns.Data.DEFAULTS = {
         }
     }
 }
+
