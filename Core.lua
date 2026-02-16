@@ -1,7 +1,6 @@
 local addonName, ns = ...
 local Data = ns.Data
 
--- Initialize AceAddon
 local TFTB = LibStub("AceAddon-3.0"):NewAddon("TFTB", "AceConsole-3.0", "AceEvent-3.0")
 ns.TFTB = TFTB
 
@@ -28,7 +27,6 @@ end
 
 function TFTB:StartSafetyTimer(duration)
     self.isReady = false
-    -- Optimized to use the new Data variable as the default
     C_Timer.After(
         duration or Data.SAFETY_PAUSE,
         function()
@@ -91,7 +89,6 @@ function TFTB:OnInitialize()
 end
 
 function TFTB:OnEnable()
-    -- Uses the standardized 3 second pause
     self:StartSafetyTimer(Data.SAFETY_PAUSE)
 
     self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
@@ -104,7 +101,6 @@ end
 ---------------------------------------------------------------------------
 -- Logic: Notifications
 ---------------------------------------------------------------------------
--- Combined logic for messaging to prevent code duplication
 local function SendAppreciation(sourceName, spellLink, messagingType)
     if messagingType == "PRINT" then
         TFTB:PrintMsg(spellLink .. " from " .. sourceName .. ".")
@@ -121,20 +117,23 @@ local function HandleStrangersBuff(sourceGUID, sourceName, spellID)
 
     local spellLink = GetSpellLink(spellID) or "Unknown Spell"
 
-    if db.emotesEnabled then
-        local availableEmotes = {}
-        for emoteCmd, isEnabled in pairs(db.emotes) do
-            if isEnabled then
-                table.insert(availableEmotes, emoteCmd)
+    SendAppreciation(sourceName, spellLink, db.messaging)
+
+    if not IsOnCooldown(sourceGUID) then
+        if db.emotesEnabled then
+            local availableEmotes = {}
+            for emoteCmd, isEnabled in pairs(db.emotes) do
+                if isEnabled then
+                    table.insert(availableEmotes, emoteCmd)
+                end
+            end
+            if #availableEmotes > 0 then
+                DoEmote(availableEmotes[math.random(#availableEmotes)], sourceName)
             end
         end
-        if #availableEmotes > 0 then
-            DoEmote(availableEmotes[math.random(#availableEmotes)], sourceName)
-        end
+        
+        SetCooldown(sourceGUID, db.cooldown)
     end
-
-    SendAppreciation(sourceName, spellLink, db.messaging)
-    SetCooldown(sourceGUID, db.cooldown)
 end
 
 local function HandleGroupBuff(sourceGUID, sourceName, spellID)
@@ -145,7 +144,8 @@ local function HandleGroupBuff(sourceGUID, sourceName, spellID)
 
     local spellLink = GetSpellLink(spellID) or "Unknown Spell"
     SendAppreciation(sourceName, spellLink, db.messaging)
-    SetCooldown(sourceGUID, 5)
+    
+    SetCooldown(sourceGUID, 3)
 end
 
 ---------------------------------------------------------------------------
@@ -161,8 +161,7 @@ function TFTB:COMBAT_LOG_EVENT_UNFILTERED()
 
     if
         subEvent ~= "SPELL_AURA_APPLIED" or destGUID ~= UnitGUID("player") or sourceGUID == UnitGUID("player") or
-            not sourceName or
-            IsOnCooldown(sourceGUID)
+            not sourceName
      then
         return
     end
@@ -185,7 +184,6 @@ function TFTB:PLAYER_ENTERING_WORLD()
         self.db and self.db.profile and self.db.profile.global and self.db.profile.global.welcomeMessage and
             not welcomeMessageShown
      then
-        -- Preserved original copy
         TFTB:PrintMsg("Enabled. You can use /tftb to disable this message or update your settings.")
         welcomeMessageShown = true
     end
