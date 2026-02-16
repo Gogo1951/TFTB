@@ -58,15 +58,29 @@ end
 -- Initialization
 ---------------------------------------------------------------------------
 function TFTB:OnInitialize()
+    -- Get current version from .toc metadata using modern API
+    local currentVersion = C_AddOns.GetAddOnMetadata(addonName, "Version") or "2026.02.15.A"
+
     if Data.DEFAULTS and Data.DEFAULTS.profile and Data.DEFAULTS.profile.groupBuffs then
         Data.DEFAULTS.profile.groupBuffs.messaging = "PRINT"
     end
 
     self.db = LibStub("AceDB-3.0"):New("TFTB_DB", Data.DEFAULTS, "Default")
+
+    -- Version Check & Migration Logic
+    local lastVersion = self.db.profile.lastRunVersion
+    if not lastVersion or lastVersion < "2026.02.15.A" then
+        self.db:ResetProfile()
+        self:PrintMsg("Version " .. currentVersion .. " detected. Settings have been reset for compatibility.")
+    end
+    
+    -- Always update to the latest version after check
+    self.db.profile.lastRunVersion = currentVersion
+
     self.db:SetProfile("Default")
 
     if not self.db.profile.groupBuffs then
-        self:PrintMsg("|cffff0000ERROR:|r Database defaults failed to load. Please reset your profile.")
+        self:PrintMsg("Error: Database defaults failed to load. Please reset your profile via /tftb.")
         return
     end
 
@@ -184,7 +198,7 @@ function TFTB:PLAYER_ENTERING_WORLD()
         self.db and self.db.profile and self.db.profile.global and self.db.profile.global.welcomeMessage and
             not welcomeMessageShown
      then
-        TFTB:PrintMsg("Enabled. You can use /tftb to disable this message or update your settings.")
+        TFTB:PrintMsg("Enabled. You can use /tftb to update your settings.")
         welcomeMessageShown = true
     end
 end
