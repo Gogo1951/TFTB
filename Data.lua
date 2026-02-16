@@ -131,6 +131,7 @@ end
 ---------------------------------------------------------------------------
 ns.Data.DEFAULTS = {
     profile = {
+        lastRunVersion = "0.0.0",
         global = {
             enabled = true,
             welcomeMessage = true
@@ -153,5 +154,3 @@ ns.Data.DEFAULTS = {
         }
     }
 }
-
-
