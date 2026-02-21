@@ -26,12 +26,9 @@ function ns.SetupOptions()
         }
     end
 
-    -- Toggle that fetches real spell description for tooltip
     local function DefineSpellGroupToggle(spellData, order)
         local name = spellData.name
         local ids = spellData.ids
-
-        -- Try to fetch real description from first ID
         local desc = "Toggle tracking for " .. name
         if ids and ids[1] then
             local spellDesc = C_Spell.GetSpellDescription(ids[1])
@@ -70,14 +67,7 @@ function ns.SetupOptions()
         handler = TFTB,
         type = "group",
         args = {
-            -------------------------------------------------------------------
-            -- HEADER
-            -------------------------------------------------------------------
-            headerMain = {
-                order = 1,
-                type = "header",
-                name = GetHeader("Thanks for the Buff")
-            },
+            headerMain = {order = 1, type = "header", name = GetHeader("Thanks for the Buff")},
             descMain = {
                 order = 2,
                 type = "description",
@@ -85,14 +75,7 @@ function ns.SetupOptions()
                 name = "Automatically expresses happiness when you receive buffs from strangers, and thank your party members for using their critical combat cooldowns for your benefit."
             },
             space1 = GetSpacer(3),
-            -------------------------------------------------------------------
-            -- GENERAL SETTINGS
-            -------------------------------------------------------------------
-            headerGen = {
-                order = 10,
-                type = "header",
-                name = GetHeader("General Settings")
-            },
+            headerGen = {order = 10, type = "header", name = GetHeader("General Settings")},
             enableAddon = {
                 order = 11,
                 type = "toggle",
@@ -121,14 +104,7 @@ function ns.SetupOptions()
                 end
             },
             spaceGen2 = GetSpacer(14),
-            -------------------------------------------------------------------
-            -- BUFFS FROM STRANGERS
-            -------------------------------------------------------------------
-            headerStrangers = {
-                order = 20,
-                type = "header",
-                name = GetHeader("Buffs from Strangers")
-            },
+            headerStrangers = {order = 20, type = "header", name = GetHeader("Buffs from Strangers")},
             descStrangers = {
                 order = 21,
                 type = "description",
@@ -169,6 +145,7 @@ function ns.SetupOptions()
                 type = "select",
                 name = "Messaging",
                 style = "dropdown",
+                width = "double",
                 values = {
                     ["NONE"] = "No Message (Default)",
                     ["PRINT"] = "Print-out Message (Self Only)",
@@ -196,22 +173,9 @@ function ns.SetupOptions()
                 end
             },
             spaceSt5 = GetSpacer(30),
-            strangersEmoteGroup = {
-                order = 31,
-                type = "group",
-                inline = true,
-                name = "Select Emotes",
-                args = {} -- Populated below
-            },
+            strangersEmoteGroup = {order = 31, type = "group", inline = true, name = "Select Emotes", args = {}},
             spaceSt6 = GetSpacer(32),
-            -------------------------------------------------------------------
-            -- IN-PARTY COMBAT BUFFS
-            -------------------------------------------------------------------
-            headerCombat = {
-                order = 40,
-                type = "header",
-                name = GetHeader("In-Party Combat Buffs")
-            },
+            headerCombat = {order = 40, type = "header", name = GetHeader("In-Party Combat Buffs")},
             descCombat = {
                 order = 41,
                 type = "description",
@@ -223,9 +187,10 @@ function ns.SetupOptions()
                 type = "select",
                 name = "Messaging",
                 style = "dropdown",
+                width = "double",
                 values = {
                     ["NONE"] = "No Message",
-                    ["PRINT"] = "Print-out Message (Self Only, Default)",
+                    ["PRINT"] = "Print-out Message (Self Only)",
                     ["WHISPER"] = "Whisper Message"
                 },
                 get = function()
@@ -242,25 +207,16 @@ function ns.SetupOptions()
                 name = "\n" .. Colorize("Tracked Abilities:", Data.COLORS.TEXT)
             },
             spaceCb3 = GetSpacer(46),
-            -- Class Groups attached here at order 60+
-
-            -------------------------------------------------------------------
-            -- THANK YOU BUTTON (Bottom)
-            -------------------------------------------------------------------
-            spaceSlHeader = GetSpacer(68),
-            headerSlash = {
-                order = 70,
-                type = "header",
-                name = GetHeader("Thank You Button")
-            },
+            spaceSlHeader = GetSpacer(168),
+            headerSlash = {order = 170, type = "header", name = GetHeader("Thank You Button")},
             descSlash = {
-                order = 71,
+                order = 171,
                 type = "description",
                 name = "Thanks for the Buff comes with a slash command " .. Colorize("/thankyou", Data.COLORS.TEXT)
             },
-            spaceSl1 = GetSpacer(72),
+            spaceSl1 = GetSpacer(172),
             createMacro = {
-                order = 73,
+                order = 173,
                 type = "toggle",
                 name = "Create Macro",
                 desc = "A macro named " ..
@@ -273,9 +229,9 @@ function ns.SetupOptions()
                     TFTB.db.profile.slash.createMacro = val
                 end
             },
-            spaceSl2 = GetSpacer(74),
+            spaceSl2 = GetSpacer(174),
             whisperMsg = {
-                order = 75,
+                order = 175,
                 type = "input",
                 name = "Whisper Message",
                 width = "full",
@@ -287,7 +243,7 @@ function ns.SetupOptions()
                 end
             },
             resetMsg = {
-                order = 75.5,
+                order = 175.5,
                 type = "execute",
                 name = "Reset",
                 desc = "Reset the whisper message to the default text.",
@@ -296,29 +252,27 @@ function ns.SetupOptions()
                     TFTB.db.profile.slash.message = "Thanks, you're the best! (="
                 end
             },
-            spaceSl3 = GetSpacer(76),
+            spaceSl3 = GetSpacer(176),
             headerSlashEmotes = {
-                order = 77,
+                order = 177,
                 type = "description",
                 name = "\n" .. Colorize("Thank You Button Emotes:", Data.COLORS.TEXT)
             },
-            slashEmoteGroup = {
-                order = 78,
-                type = "group",
-                inline = true,
-                name = "Select Emotes",
-                args = {} -- Populated below
-            },
-            spaceSl4 = GetSpacer(79)
+            slashEmoteGroup = {order = 178, type = "group", inline = true, name = "Select Emotes", args = {}},
+            spaceSl4 = GetSpacer(179)
         }
     }
 
-    -- Populate Strangers Emotes
-    for i, emote in ipairs(Data.EMOTES_LIST) do
+    -- Populate Emotes from Consolidated List
+    for i, emoteData in ipairs(Data.EMOTES) do
+        local emote = emoteData.cmd
+        local desc = emoteData.desc
+
+        -- Strangers Group
         options.args.strangersEmoteGroup.args[emote] = {
             type = "toggle",
             name = emote,
-            desc = Data.EMOTE_DESCRIPTIONS[emote],
+            desc = desc,
             order = i,
             width = "half",
             get = function()
@@ -328,14 +282,11 @@ function ns.SetupOptions()
                 TFTB.db.profile.strangers.emotes[emote] = val
             end
         }
-    end
-
-    -- Populate Slash Emotes
-    for i, emote in ipairs(Data.EMOTES_LIST) do
+        -- Slash Group
         options.args.slashEmoteGroup.args[emote] = {
             type = "toggle",
             name = emote,
-            desc = Data.EMOTE_DESCRIPTIONS[emote],
+            desc = desc,
             order = i,
             width = "half",
             get = function()
@@ -347,14 +298,28 @@ function ns.SetupOptions()
         }
     end
 
-    -- Populate Class Spells
+    -- Populate Class/Item Spells
     if Data.SPELL_LIST then
         local classOrder = 60
         local classList = {}
+        local hasItems = false
+
+        -- Separate "ITEMS" from the standard class list so it can be appended at the end
         for class, _ in pairs(Data.SPELL_LIST) do
-            table.insert(classList, class)
+            if class == "ITEMS" then
+                hasItems = true
+            else
+                table.insert(classList, class)
+            end
         end
+
+        -- Alphabetize classes
         table.sort(classList)
+
+        -- Append "ITEMS" to the bottom of the list
+        if hasItems then
+            table.insert(classList, "ITEMS")
+        end
 
         for _, class in ipairs(classList) do
             local spellGroups = Data.SPELL_LIST[class]
@@ -374,7 +339,6 @@ function ns.SetupOptions()
             if hasBuffs then
                 local color = Data.COLORS[class] or "FFFFFF"
                 local groupName = Colorize(class:sub(1, 1) .. class:sub(2):lower(), color)
-
                 options.args["class_" .. class] = {
                     type = "group",
                     name = groupName,
@@ -392,7 +356,6 @@ function ns.SetupOptions()
                             break
                         end
                     end
-
                     if groupExists then
                         local key = "spell_" .. spellData.name:gsub(" ", "_")
                         options.args["class_" .. class].args[key] = DefineSpellGroupToggle(spellData, spellOrder)
@@ -407,7 +370,6 @@ function ns.SetupOptions()
     AC:RegisterOptionsTable("TFTB", options)
     local profiles = LibStub("AceDBOptions-3.0"):GetOptionsTable(TFTB.db)
     AC:RegisterOptionsTable("TFTB_Profiles", profiles)
-
     local mainPanel = ACD:AddToBlizOptions("TFTB", "Thanks for the Buff", nil)
     ACD:AddToBlizOptions("TFTB_Profiles", "Profiles", "Thanks for the Buff")
 
@@ -420,13 +382,11 @@ function ns.SetupOptions()
                 return
             end
         end
-
         if InterfaceOptionsFrame_OpenToCategory then
             InterfaceOptionsFrame_OpenToCategory(mainPanel)
             InterfaceOptionsFrame_OpenToCategory(mainPanel)
             return
         end
-
         ACD:Open("TFTB")
     end
 end
